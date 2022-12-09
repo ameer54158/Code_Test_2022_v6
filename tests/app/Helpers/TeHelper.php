@@ -50,9 +50,12 @@ class TeHelper
 
         if($difference <= 90)
             $time = $due_time;
+        //This elseif never run in anycase so there are no need of this elseif, this is use less
         elseif ($difference <= 24) {
             $time = $created_at->addMinutes(90);
-        } elseif ($difference > 24 && $difference <= 72) {
+        }
+        //End Comment
+        elseif ($difference > 24 && $difference <= 72) {
             $time = $created_at->addHours(16);
         } else {
             $time = $due_time->subHours(48);

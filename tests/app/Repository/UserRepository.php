@@ -54,11 +54,14 @@ class UserRepository extends BaseRepository
         $model->mobile = $request['mobile'];
 
 
-        if (!$id || $id && $request['password']) $model->password = bcrypt($request['password']);
+        if (!$id || ($id && $request['password'])) $model->password = bcrypt($request['password']);
         $model->detachAllRoles();
         $model->save();
         $model->attachRole($request['role']);
         $data = array();
+
+        $user_meta = UserMeta::firstOrCreate(['user_id' => $model->id]);
+        $user_meta->post_code = $request['post_code'];
 
         if ($request['role'] == env('CUSTOMER_ROLE_ID')) {
 
@@ -67,21 +70,25 @@ class UserRepository extends BaseRepository
                 if($request['company_id'] == '')
                 {
                     $type = Type::where('code', 'paid')->first();
-                    $company = Company::create(['name' => $request['name'], 'type_id' => $type->id, 'additional_info' => 'Created automatically for user ' . $model->id]);
-                    $department = Department::create(['name' => $request['name'], 'company_id' => $company->id, 'additional_info' => 'Created automatically for user ' . $model->id]);
-
-                    $model->company_id = $company->id;
-                    $model->department_id = $department->id;
+                    if($type){
+                        $company = Company::create(['name' => $request['name'], 'type_id' => $type->id, 'additional_info' => 'Created automatically for user ' . $model->id]);
+                        if($company){
+                            $department = Department::create(['name' => $request['name'], 'company_id' => $company->id, 'additional_info' => 'Created automatically for user ' . $model->id]);
+                            $model->company_id = $company->id;
+                            if($department){
+                                $model->department_id = $department->id;
+                            }
+                        }
+                    }
                     $model->save();
                 }
             }
 
-            $user_meta = UserMeta::firstOrCreate(['user_id' => $model->id]);
             $old_meta = $user_meta->toArray();
             $user_meta->consumer_type = $request['consumer_type'];
             $user_meta->customer_type = $request['customer_type'];
             $user_meta->username = $request['username'];
-            $user_meta->post_code = $request['post_code'];
+
             $user_meta->address = $request['address'];
             $user_meta->city = $request['city'];
             $user_meta->town = $request['town'];
@@ -131,8 +138,6 @@ class UserRepository extends BaseRepository
 
         } else if ($request['role'] == env('TRANSLATOR_ROLE_ID')) {
 
-            $user_meta = UserMeta::firstOrCreate(['user_id' => $model->id]);
-
             $user_meta->translator_type = $request['translator_type'];
             $user_meta->worked_for = $request['worked_for'];
             if ($request['worked_for'] == 'yes') {
@@ -141,7 +146,6 @@ class UserRepository extends BaseRepository
             $user_meta->gender = $request['gender'];
             $user_meta->translator_level = $request['translator_level'];
             $user_meta->additional_info = $request['additional_info'];
-            $user_meta->post_code = $request['post_code'];
             $user_meta->address = $request['address'];
             $user_meta->address_2 = $request['address_2'];
             $user_meta->town = $request['town'];
