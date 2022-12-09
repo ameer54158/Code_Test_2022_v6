@@ -1,6 +1,9 @@
 General comments for both files
 
-there are no any try catch have been used in all the files. We must use the try catch so that we can handle error and return a response if any error occured.
+1.there are no any try catch have been used in all the files. We must use the try catch so that we can handle error and return a response if any error occured.
+
+2. There are no any comment against any function that will be help ful of the new developers
+
 
 BookingController.php
 1. we can use Auth::user() instead of $request->__authenticatedUser in wholecontroller. Because we have to use the laravel authentication method for
